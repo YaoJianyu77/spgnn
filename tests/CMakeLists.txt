@@ -1,71 +1,35 @@
 include(FetchContent)
 
-# ===== GoogleTest =====
-# 你也可以改为用系统包管理器安装的 GTest
-FetchContent_Declare(
-  googletest
+# GTest
+FetchContent_Declare(googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        v1.14.0
-)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  GIT_TAG v1.14.0)
 FetchContent_MakeAvailable(googletest)
 
-# ===== 可选第三方库（仅用于对比/扩展） =====
-# Eigen
-if(USE_EIGEN)
-  find_package(Eigen3 3.3 QUIET)
-  if(NOT Eigen3_FOUND)
-    message(WARNING "USE_EIGEN=ON but Eigen3 not found; tests will still build without Eigen.")
-  endif()
-endif()
-
-# MKL（如果你装了 oneAPI MKL，一般可用 MKLConfig）
-if(USE_MKL)
-  find_package(MKL QUIET)
-  if(NOT MKL_FOUND)
-    message(WARNING "USE_MKL=ON but MKL not found; tests will still build without MKL.")
-  endif()
-endif()
-
-# cuSPARSE（来自 CUDAToolkit）
-if(USE_CUSPARSE AND ENABLE_CUDA)
-  if(TARGET CUDA::cusparse)
-    # ok
-  else()
-    message(WARNING "USE_CUSPARSE=ON but CUDA::cusparse not found; turn off USE_CUSPARSE or upgrade CUDA.")
-  endif()
-endif()
-
-# ===== 测试目标 =====
-add_executable(spmm_test
-  ${PROJECT_SOURCE_DIR}/test/spmm_test.cpp
+# 统一测试目标：spmm_tests
+file(GLOB_RECURSE TESTS_UNITS_SOURCES ${PROJECT_SOURCE_DIR}/tests/units/*.cpp)
+file(GLOB_RECURSE TESTS_PERFORMANCE_SOURCES ${PROJECT_SOURCE_DIR}/tests/performance/*.cpp)
+file(GLOB_RECURSE TESTS_INTEGRATION_SOURCES ${PROJECT_SOURCE_DIR}/tests/integration/*.cpp)
+add_executable(spmm_tests
+  ${TESTS_UNITS_SOURCES}
+  ${TESTS_PERFORMANCE_SOURCES}
+  ${TESTS_INTEGRATION_SOURCES}
 )
 
-target_link_libraries(spmm_test
-  PRIVATE
-    gtest_main
-    spmm_cpu
-)
+target_include_directories(spmm_tests PRIVATE
+  ${PROJECT_SOURCE_DIR}/tests/common)
 
-# GPU & CUDA 运行时
-if(ENABLE_CUDA)
-  target_link_libraries(spmm_test PRIVATE spmm_gpu CUDA::cudart)
+target_link_libraries(spmm_tests PRIVATE gtest_main spmm_cpu)
+if(ENABLE_GPU)
+  target_link_libraries(spmm_tests PRIVATE spmm_gpu CUDA::cudart)
+endif()
+if(USE_CUSPARSE AND ENABLE_GPU AND TARGET CUDA::cusparse)
+  target_link_libraries(spmm_tests PRIVATE CUDA::cusparse)
+  target_compile_definitions(spmm_tests PRIVATE USE_CUSPARSE=1)
 endif()
 
-# 条件性对比库
-if(USE_CUSPARSE AND ENABLE_CUDA AND TARGET CUDA::cusparse)
-  target_link_libraries(spmm_test PRIVATE CUDA::cusparse)
-  target_compile_definitions(spmm_test PRIVATE USE_CUSPARSE=1)
-endif()
+# 让性能用例能找到 cases.json（传一个变量给代码）
+target_compile_definitions(spmm_tests PRIVATE TEST_SOURCE_DIR="${PROJECT_SOURCE_DIR}/tests")
 
-if(USE_EIGEN AND Eigen3_FOUND)
-  target_link_libraries(spmm_test PRIVATE Eigen3::Eigen)
-  target_compile_definitions(spmm_test PRIVATE USE_EIGEN=1)
-endif()
-
-if(USE_MKL AND MKL_FOUND)
-  target_link_libraries(spmm_test PRIVATE MKL::MKL)
-  target_compile_definitions(spmm_test PRIVATE USE_MKL=1)
-endif()
-
-add_test(NAME spmm_test COMMAND spmm_test)
+add_test(NAME spmm_tests COMMAND spmm_tests)
+set_tests_properties(spmm_tests PROPERTIES LABELS "unit;perf;integration")
