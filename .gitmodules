@@ -1,3 +1,4 @@
 [submodule "external/AccSpMM"]
 	path = external/AccSpMM
 	url = https://github.com/YaoJianyu77/AccSpMM.git
+	branch = bench_patch
