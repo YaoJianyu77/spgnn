@@ -1,0 +1,30 @@
+[
+  {
+    "name": "small_cpu_1",
+    "device": "cpu",
+    "backends": ["ours_cpu", "projA_cpu"],
+    "m": 1024,
+    "k": 1024,
+    "n": 64,
+    "sparsity": 0.9,
+    "repeats": 50
+  },
+  {
+    "name": "medium_gpu_1",
+    "device": "gpu",
+    "backends": ["ours_gpu", "projA_gpu"],
+    "m": 4096,
+    "k": 4096,
+    "n": 128,
+    "sparsity": 0.95,
+    "repeats": 30
+  },
+  {
+  "name": "real_graph_1",
+  "device": "gpu",
+  "backends": ["ours_gpu", "projB_gpu"],
+  "matrix_file": "data/graph1_csr.npz",
+  "n": 128,
+  "repeats": 20
+}
+]
