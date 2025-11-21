@@ -1,0 +1,3 @@
+[submodule "external/AccSpMM"]
+	path = external/AccSpMM
+	url = https://github.com/AI4SClab/AccSpMM.git
