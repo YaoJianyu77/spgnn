@@ -7,7 +7,7 @@ option(ENABLE_GPU     "Build GPU backend"                ON)
 option(ENABLE_CPU     "Build CPU backend"                 ON)
 option(ENABLE_OPENMP   "Enable OpenMP for CPU backend"     OFF)
 option(SPMM_LIB_KIND_STATIC "Build static libs (otherwise shared)" ON)
-option(ENABLE_TESTS    "Build tests (GoogleTest)"          OFF)
+option(ENABLE_TESTS    "Build tests (GoogleTest)"          ON)
 option(ENABLE_BENCH    "Build benchmarks"                  OFF) # 预留
 option(USE_CUSPARSE    "Enable cuSPARSE in tests"          OFF)
 option(USE_EIGEN       "Enable Eigen in tests"             OFF)
@@ -43,16 +43,16 @@ if(ENABLE_GPU AND NOT DEFINED SPMM_CUDA_ARCHS)
 endif()
 set(CMAKE_CUDA_ARCHITECTURES "${SPMM_CUDA_ARCHS}")
 
-
 # C++ 标准与通用设置
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # 便于将来做 Python 扩展或安装
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)    # 方便 IDE/静态分析
 
-# 为了干净的输出
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
+# 如果用户没有指定构建类型，默认使用 RelWithDebInfo (高性能 + 可调试)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "注意: 未指定构建类型，默认使用 RelWithDebInfo 模式。")
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Build type" FORCE)
 endif()
 
 # CUDA 语言按需启用
