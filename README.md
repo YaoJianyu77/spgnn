@@ -7,16 +7,15 @@ It provides a clean structure for implementing, testing, and benchmarking SpMM k
 
 ## Structure
 
+```text
 SPARSE/
 ├── benchmarks/ # Cross-project benchmarking tools
-├── external/ # Baselines as Git submodules
-├── include/ # Public interfaces
-├── src/ # CPU/GPU implementations
-├── tests/ # Unit + integration tests
-└── scripts/ # Development utilities
-
-yaml
-Copy code
+├── external/   # Baselines as Git submodules
+├── include/    # Public interfaces
+├── src/        # CPU/GPU implementations
+├── tests/      # Unit + integration tests
+└── scripts/    # Development utilities
+```
 
 The layout separates correctness testing, internal evaluation, and comparative benchmarking, supporting clear and reproducible experimentation.
 
@@ -24,43 +23,59 @@ The layout separates correctness testing, internal evaluation, and comparative b
 
 ## Getting Started
 
+### Clone
+
 Clone the repository with all submodules:
 
 ```bash
-git clone --recurse-submodules https://github.com/YaoJianyu77/SPARSE.git
-cd SPARSE
+git clone --recurse-submodules https://github.com/YaoJianyu77/spgnn.git
+cd spgnn
+```
+
 Initialize or update submodules if needed:
 
-bash
-Copy code
+```bash
 git submodule update --init --recursive
-Development Setup
-To switch all external baselines to the intended research branch (e.g., bench_patch):
+```
 
-bash
-Copy code
+### Development Setup
+
+To switch all external baselines to the intended research branch (e.g., `bench_patch`):
+
+```bash
 ./scripts/dev_setup.sh
+```
+
 This provides a consistent development environment across multiple submodules.
 
-Build
-bash
-Copy code
+### Build
+
+```bash
 mkdir build && cd build
 cmake ..
 make -j
-Testing
+```
+
+### Testing
+
 Run correctness and small-scale performance tests:
 
-bash
-Copy code
+```bash
 ctest --output-on-failure
-Benchmarking
+```
+
+### Benchmarking
+
 Benchmark configurations are defined in JSON and executed via:
 
-bash
-Copy code
+```bash
 ./benchmarks/spmm_compare <cases.json>
+```
+
 This enables structured comparison of internal and external SpMM implementations.
 
-License
+---
+
+## License
+
 Released under the MIT License.
