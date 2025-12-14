@@ -1,7 +1,6 @@
 # SPARSE
 
 **SPARSE** is a lightweight research framework for studying Sparse Matrix–Dense Matrix multiplication (SpMM) on CPUs and GPUs.  
-It provides a clean structure for implementing, testing, and benchmarking SpMM kernels and external baselines under a unified interface.
 
 ---
 
@@ -29,7 +28,6 @@ Clone the repository with all submodules:
 
 ```bash
 git clone --recurse-submodules https://github.com/YaoJianyu77/spgnn.git
-cd spgnn
 ```
 
 Initialize or update submodules if needed:
