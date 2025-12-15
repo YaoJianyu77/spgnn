@@ -13,7 +13,7 @@ SPARSE/
 ├── include/    # Public interfaces
 ├── src/        # CPU/GPU implementations
 ├── tests/      # Unit + integration tests
-└── scripts/    # Development utilities
+└── tools/    # Development utilities
 ```
 
 The layout separates correctness testing, internal evaluation, and comparative benchmarking, supporting clear and reproducible experimentation.
