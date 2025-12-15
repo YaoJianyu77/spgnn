@@ -45,8 +45,10 @@ STOPWORDS = {
 }
 TOKEN_RE = re.compile(r"[a-z]{3,}")  # >=3 letters
 
+
 def _mkdir_p(p: str) -> None:
     os.makedirs(p, exist_ok=True)
+
 
 def _http_download(url: str, out_path: str, chunk: int = 1 << 20) -> None:
     tmp = out_path + ".part"
@@ -59,11 +61,13 @@ def _http_download(url: str, out_path: str, chunk: int = 1 << 20) -> None:
             f.write(b)
     os.replace(tmp, out_path)
 
+
 def _read_remote_md5(md5_url: str) -> str:
     req = urllib.request.Request(md5_url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req) as r:
         text = r.read().decode("utf-8", errors="ignore").strip()
     return text.split()[0]
+
 
 def _md5_file(path: str, chunk: int = 1 << 20) -> str:
     h = hashlib.md5()
@@ -75,11 +79,13 @@ def _md5_file(path: str, chunk: int = 1 << 20) -> str:
             h.update(b)
     return h.hexdigest()
 
+
 def _decompress_gz(gz_path: str, xml_path: str) -> None:
     tmp = xml_path + ".part"
     with gzip.open(gz_path, "rb") as fin, open(tmp, "wb") as fout:
         shutil.copyfileobj(fin, fout, length=1 << 20)
     os.replace(tmp, xml_path)
+
 
 def _tokenize_title(title: str, max_terms_per_paper: int) -> List[str]:
     if not title:
@@ -96,6 +102,7 @@ def _tokenize_title(title: str, max_terms_per_paper: int) -> List[str]:
             break
     return out
 
+
 def _venue_of(elem) -> str:
     bt = elem.findtext("booktitle")
     if bt:
@@ -105,6 +112,7 @@ def _venue_of(elem) -> str:
         return jr.strip()
     return ""
 
+
 def _year_of(elem) -> int:
     y = elem.findtext("year")
     if not y:
@@ -113,6 +121,7 @@ def _year_of(elem) -> int:
         return int(y.strip())
     except Exception:
         return -1
+
 
 def _authors_of(elem, max_authors_per_paper: int) -> List[str]:
     authors = []
@@ -130,7 +139,13 @@ def _authors_of(elem, max_authors_per_paper: int) -> List[str]:
             out.append(x)
     return out
 
-def coo_to_csr_numpy(n_row: int, n_col: int, rows: List[int], cols: List[int]) -> Tuple[List[int], List[int], List[float]]:
+
+def coo_to_csr_numpy(
+    n_row: int,
+    n_col: int,
+    rows: List[int],
+    cols: List[int],
+) -> Tuple[List[int], List[int], List[float]]:
     import numpy as np
     if len(rows) == 0:
         return [0]*(n_row+1), [], []
@@ -152,10 +167,13 @@ def coo_to_csr_numpy(n_row: int, n_col: int, rows: List[int], cols: List[int]) -
     values = np.ones(col_indices.size, dtype=np.float32)
     return row_offsets.astype(np.int32).tolist(), col_indices.tolist(), values.tolist()
 
+
 def parse_args():
     ap = argparse.ArgumentParser()
 
-    ap.add_argument("--out_dir", default="dblp", help="output directory")
+    # 必须显式指定，防止误写到默认目录
+    ap.add_argument("--out_dir", required=True, help="output directory (required)")
+
     ap.add_argument("--year_min", type=int, default=2015)
     ap.add_argument("--year_max", type=int, default=2024)
 
@@ -185,15 +203,22 @@ def parse_args():
     ap.add_argument("--resume", action="store_true",
                     help="if papers.jsonl.gz exists, skip PARSE1 and reuse it")
 
-    ap.add_argument("--compact_ids", action="store_true")
+    # 改动：默认开启 compact_ids / estimate_apcpa
+    ap.add_argument("--compact_ids", action="store_true", default=True,
+                    help="compact used author/term/venue IDs to 0..N-1 (default: on)")
+    ap.add_argument("--no_compact_ids", action="store_false", dest="compact_ids",
+                    help="disable --compact_ids")
 
-    # estimate APCPA upper-bound
-    ap.add_argument("--estimate_apcpa", action="store_true",
-                    help="estimate APCPA nnz upper-bound ~ sum_v |A_v|^2 (after pass2)")
+    ap.add_argument("--estimate_apcpa", action="store_true", default=True,
+                    help="estimate APCPA nnz upper-bound ~ sum_v |A_v|^2 (default: on)")
+    ap.add_argument("--no_estimate_apcpa", action="store_false", dest="estimate_apcpa",
+                    help="disable --estimate_apcpa")
+
     ap.add_argument("--max_apcpa_est", type=int, default=600000000,
                     help="warn if estimate exceeds this threshold")
 
     return ap.parse_args()
+
 
 def main():
     args = parse_args()
@@ -542,6 +567,7 @@ def main():
         json.dump(meta, f, indent=2)
 
     print(f"[DONE] wrote CSR binaries (PA/PT/PC + AP/TP/CP) + meta.json in {out_dir}")
+
 
 if __name__ == "__main__":
     main()
