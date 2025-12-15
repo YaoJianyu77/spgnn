@@ -7,7 +7,7 @@ option(ENABLE_GPU     "Build GPU backend"                ON)
 option(ENABLE_CPU     "Build CPU backend"                 OFF)
 option(ENABLE_OPENMP   "Enable OpenMP for CPU backend"     OFF)
 option(SPMM_LIB_KIND_STATIC "Build static libs (otherwise shared)" ON)
-option(ENABLE_TESTS    "Build tests (GoogleTest)"          ON)
+option(ENABLE_TESTS    "Build tests (GoogleTest)"          OFF)
 option(ENABLE_BENCH    "Build benchmarks"                  OFF) # 预留
 option(USE_CUSPARSE    "Enable cuSPARSE in tests"          OFF)
 option(USE_EIGEN       "Enable Eigen in tests"             OFF)
